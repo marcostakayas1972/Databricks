@@ -12,7 +12,7 @@ import ingestors
 
 # DBTITLE 1,SETUP
 catalog    = "gold"
-schemaname = 'saude_dados'
+schemaname = 'ss'
 tablename  = dbutils.widgets.get("tablename")
 
 start      = dbutils.widgets.get("dt_start") # now 

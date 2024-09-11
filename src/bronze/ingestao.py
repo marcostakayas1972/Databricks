@@ -27,7 +27,7 @@ query           = f"select * from {tablename} where {timestamp_field} BETWEEN {d
 # Catálogo é a camada em si
 catalog         =  "bronze"
 # schemaname é o banco de dados
-schemaname      = "saude_dados"
+schemaname      = "ss"
 
 # Verifica se a tabela existe, caso contrário deverá ser criada
 tabela_existe   = utils.table_exists(spark, catalog, schemaname, tablename)

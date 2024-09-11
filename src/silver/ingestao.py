@@ -9,7 +9,7 @@ tablename   = dbutils.widgets.get("tablename")
 idfield     = dbutils.widgets.get("id_field")
 
 catalog     = "silver"
-schemaname  = "saude_dados"
+schemaname  = "ss"
 
 remove_checkpoint = False
 
