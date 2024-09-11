@@ -1,0 +1,249 @@
+{
+    "job_id": 557670198108589,
+    "new_settings": {
+        "name": "Upsell",
+        "email_notifications": {
+            "no_alert_for_skipped_runs": false
+        },
+        "webhook_notifications": {},
+        "timeout_seconds": 0,
+        "schedule": {
+            "quartz_cron_expression": "00 00 7 * * ?",
+            "timezone_id": "America/Sao_Paulo",
+            "pause_status": "UNPAUSED"
+        },
+        "max_concurrent_runs": 1,
+        "tasks": [
+            {
+                "task_key": "bronze_customers",
+                "run_if": "ALL_SUCCESS",
+                "notebook_task": {
+                    "notebook_path": "src/bronze/ingestao",
+                    "base_parameters": {
+                        "tablename": "customers",
+                        "id_field": "idCustomer",
+                        "timestamp_field": "modified_date"
+                    },
+                    "source": "GIT"
+                },
+                "existing_cluster_id": "0809-155233-nc569ju7",
+                "timeout_seconds": 0,
+                "email_notifications": {},
+                "notification_settings": {
+                    "no_alert_for_skipped_runs": false,
+                    "no_alert_for_canceled_runs": false,
+                    "alert_on_last_attempt": false
+                },
+                "webhook_notifications": {}
+            },
+            {
+                "task_key": "bronze_transactions",
+                "run_if": "ALL_SUCCESS",
+                "notebook_task": {
+                    "notebook_path": "src/bronze/ingestao",
+                    "base_parameters": {
+                        "tablename": "transactions",
+                        "id_field": "idTransaction",
+                        "timestamp_field": "modified_date"
+                    },
+                    "source": "GIT"
+                },
+                "existing_cluster_id": "0809-155233-nc569ju7",
+                "timeout_seconds": 0,
+                "email_notifications": {},
+                "notification_settings": {
+                    "no_alert_for_skipped_runs": false,
+                    "no_alert_for_canceled_runs": false,
+                    "alert_on_last_attempt": false
+                },
+                "webhook_notifications": {}
+            },
+            {
+                "task_key": "bronze_transactions_product",
+                "run_if": "ALL_SUCCESS",
+                "notebook_task": {
+                    "notebook_path": "src/bronze/ingestao",
+                    "base_parameters": {
+                        "tablename": "transactions_product",
+                        "id_field": "idTransactionCart",
+                        "timestamp_field": "modified_date"
+                    },
+                    "source": "GIT"
+                },
+                "existing_cluster_id": "0809-155233-nc569ju7",
+                "timeout_seconds": 0,
+                "email_notifications": {},
+                "notification_settings": {
+                    "no_alert_for_skipped_runs": false,
+                    "no_alert_for_canceled_runs": false,
+                    "alert_on_last_attempt": false
+                },
+                "webhook_notifications": {}
+            },
+            {
+                "task_key": "silver_cliente",
+                "depends_on": [
+                    {
+                        "task_key": "bronze_customers"
+                    }
+                ],
+                "run_if": "ALL_SUCCESS",
+                "notebook_task": {
+                    "notebook_path": "src/silver/ingestao",
+                    "base_parameters": {
+                        "tablename": "cliente",
+                        "id_field": "idCliente",
+                        "id_field_old": "idCustomer"
+                    },
+                    "source": "GIT"
+                },
+                "existing_cluster_id": "0809-155233-nc569ju7",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "silver_produtos",
+                "depends_on": [
+                    {
+                        "task_key": "bronze_transactions_product"
+                    }
+                ],
+                "run_if": "ALL_SUCCESS",
+                "notebook_task": {
+                    "notebook_path": "src/silver/ingestao",
+                    "base_parameters": {
+                        "tablename": "produtos",
+                        "id_field": "descProduto",
+                        "id_field_old": "idTransactionCart"
+                    },
+                    "source": "GIT"
+                },
+                "existing_cluster_id": "0809-155233-nc569ju7",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "silver_transacao_produto",
+                "depends_on": [
+                    {
+                        "task_key": "bronze_transactions_product"
+                    }
+                ],
+                "run_if": "ALL_SUCCESS",
+                "notebook_task": {
+                    "notebook_path": "src/silver/ingestao",
+                    "base_parameters": {
+                        "tablename": "transacao_produto",
+                        "id_field": "idTransacaoProduto",
+                        "id_field_old": "idTransactionCart"
+                    },
+                    "source": "GIT"
+                },
+                "existing_cluster_id": "0809-155233-nc569ju7",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "silver_transacoes",
+                "depends_on": [
+                    {
+                        "task_key": "bronze_transactions"
+                    }
+                ],
+                "run_if": "ALL_SUCCESS",
+                "notebook_task": {
+                    "notebook_path": "src/silver/ingestao",
+                    "base_parameters": {
+                        "tablename": "transacoes",
+                        "id_field": "idTransacao",
+                        "id_field_old": "idTransaction"
+                    },
+                    "source": "GIT"
+                },
+                "existing_cluster_id": "0809-155233-nc569ju7",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "gold_daily_report",
+                "depends_on": [
+                    {
+                        "task_key": "silver_transacoes"
+                    },
+                    {
+                        "task_key": "silver_transacao_produto"
+                    }
+                ],
+                "run_if": "ALL_SUCCESS",
+                "notebook_task": {
+                    "notebook_path": "src/gold/ingestao",
+                    "base_parameters": {
+                        "tablename": "daily_report",
+                        "dt_start": "{{job.start_time.iso_date}}",
+                        "dt_stop": "{{job.start_time.iso_date}}"
+                    },
+                    "source": "GIT"
+                },
+                "existing_cluster_id": "0809-155233-nc569ju7",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "gold_monthly_report",
+                "depends_on": [
+                    {
+                        "task_key": "silver_transacoes"
+                    },
+                    {
+                        "task_key": "silver_transacao_produto"
+                    }
+                ],
+                "run_if": "ALL_SUCCESS",
+                "notebook_task": {
+                    "notebook_path": "src/gold/ingestao",
+                    "base_parameters": {
+                        "tablename": "monthly_report",
+                        "dt_start": "{{job.start_time.iso_date}}",
+                        "dt_stop": "{{job.start_time.iso_date}}"
+                    },
+                    "source": "GIT"
+                },
+                "existing_cluster_id": "0809-155233-nc569ju7",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            },
+            {
+                "task_key": "gold_churn_report",
+                "depends_on": [
+                    {
+                        "task_key": "silver_transacoes"
+                    },
+                    {
+                        "task_key": "silver_transacao_produto"
+                    }
+                ],
+                "run_if": "ALL_SUCCESS",
+                "notebook_task": {
+                    "notebook_path": "src/gold/ingestao",
+                    "base_parameters": {
+                        "tablename": "churn_report",
+                        "dt_start": "{{job.start_time.iso_date}}",
+                        "dt_stop": "{{job.start_time.iso_date}}"
+                    },
+                    "source": "GIT"
+                },
+                "existing_cluster_id": "0809-155233-nc569ju7",
+                "timeout_seconds": 0,
+                "email_notifications": {}
+            }
+        ],
+        "git_source": {
+            "git_url": "https://github.com/TeoMeWhy/lago-mago",
+            "git_provider": "gitHub",
+            "git_branch": "main"
+        },
+        "run_as": {
+            "user_name": "teomewhy@gmail.com"
+        }
+    }
+}
